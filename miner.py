@@ -7,29 +7,31 @@ print 'Hello ', user, "!"
 # python miner.py --shape-predictor shape_predictor_68_face_landmarks.dat
 # python miner.py --shape-predictor shape_predictor_68_face_landmarks.dat --alarm alarm.wav
 
-from scipy.spatial import distance as dist
-from imutils.video import VideoStream
-from imutils import face_utils
-from threading import Thread
-import numpy as np
-import playsound
 import argparse
-import imutils
-import time
-import dlib
-import cv2
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import matplotlib.dates as mdates
-from matplotlib import style
-import os.path
 import csv
 import datetime as dt
+import os.path
 import time
-import pymysql
+from threading import Thread
 
-db = pymysql.connect("192.178.5.10","root","root","bharathacks")
-cursor = db.cursor()
+import cv2
+import dlib
+import imutils
+import matplotlib.animation as animation
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import playsound
+import pymysql
+from imutils import face_utils
+from imutils.video import VideoStream
+from matplotlib import style
+from scipy.spatial import distance as dist
+
+from extras.keyclipwriter import KeyClipWriter
+
+# db = pymysql.connect("192.178.5.10","root","root","bharathacks")
+# cursor = db.cursor()
 # likely that you'll have to do pip install pyobjc on mac bc the stupid sound doesn't play otherwise. 
 
 #logo
@@ -62,6 +64,16 @@ ap.add_argument("-a", "--alarm", type=str, default="",
 	help="path alarm .WAV file")
 ap.add_argument("-w", "--webcam", type=int, default=0,
 	help="index of webcam on system")
+ap.add_argument("-o", "--output", required=True,
+	help="path to output directory")
+
+ap.add_argument("-f", "--fps", type=int, default=15,
+	help="FPS of output video")
+ap.add_argument("-c", "--codec", type=str, default="MJPG",
+	help="codec of output video")
+ap.add_argument("-b", "--buffer-size", type=int, default=32,
+	help="buffer size of video clip writer")
+
 args = vars(ap.parse_args())
  
 # define two constants, one for the eye aspect ratio to indicate
@@ -69,14 +81,14 @@ args = vars(ap.parse_args())
 # frames the eye must be below the threshold for to set off the
 # alarm
 EYE_AR_THRESH = 0.20
-EYE_AR_CONSEC_FRAMES = 13
+EYE_AR_CONSEC_FRAMES = 15
 
 # initialize the frame counter as well as a boolean used to
 # indicate if the alarm is going off
 COUNTER = 0
 ALARM_ON = False
 
-print("[WELCOME] FaceRecog Asia Live Fatigue Monitoring System")
+print("[WELCOME] Uatu Live Fatigue Monitoring System")
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
 print("[INFO] loading facial landmark predictor...")
@@ -91,33 +103,10 @@ predictor = dlib.shape_predictor(args["shape_predictor"])
 # start the video stream thread
 print("[INFO] starting video stream thread...")
 vs = VideoStream(src=args["webcam"]).start()
-time.sleep(1.0)
+time.sleep(1.0) 
 
-#plot stuff
-
-# timestr = time.strftime("%Y%m%d-%H%M%S")
-# axisdate = time.strftime("%Y-%m-%d %H:%M:%S")
-# # print(axisdate)
-# earfile = open(timestr + '.txt', 'w+')
-style.use('fivethirtyeight')
-
-# fig_ear = plt.figure()
-# ax1 = fig_ear.add_subplot(1, 1, 1)
-
-# xs = []
-# ys = []
-
-# def animate(i):
-# 	graph_data = csv.reader(open('earfile.csv'))
-# 	# lines = graph_data.split('\n')
-# 	for line in graph_data:
-# 			if len(line)>1:
-# 					# x, y = line.split(',')
-# 					xs.append(line[1])
-# 					ys.append(dt.datetime.strptime(line[0],'%M:%S.%f'))
-# 	ax1.clear()
-# 	ax1.plot(xs, ys)
-# 	fig_eat.autofmt_xdate()
+kcw = KeyClipWriter(bufSize=args["buffer_size"])
+consecFrames = 0
 
 # loop over frames from the video stream
 while True:
@@ -127,6 +116,7 @@ while True:
 	frame = vs.read()
 	frame = imutils.resize(frame, width=900)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	updateConsecFrames = True
 
 	# detect faces in the grayscale frame
 	rects = detector(gray, 0)
@@ -157,12 +147,12 @@ while True:
 			if not file_exists:
   				writer.writeheader()
 			writer.writerow({'Timestamp': time.strftime("%Y-%m-%d %H:%M:%S"), 'EAR': ear})
-			sql = "INSERT INTO "+user+" (time,ear) VALUES ('%s','%s')" % (str(int(time.time()),), str(ear))
-			try:
-				cursor.execute(sql)
-				db.commit()
-			except:
-				db.rollback()
+			# sql = "INSERT INTO "+user+" (time,ear) VALUES ('%s','%s')" % (str(int(time.time()),), str(ear))
+			# try:
+			# 	cursor.execute(sql)
+			# 	db.commit()
+			# except:
+			# 	db.rollback()
 		
 		# earfile.write(('%s','%s') % (axisdate, ear) + '\n')
 
@@ -181,6 +171,15 @@ while True:
 			# if the eyes were closed for a sufficient number of
 			# then sound the alarm
 			if COUNTER >= EYE_AR_CONSEC_FRAMES:
+                                consecFrames = 0
+
+				if not kcw.recording:
+                                        timestamp = dt.datetime.now()
+					p = "{}/{}.avi".format(args["output"], timestamp.strftime("%Y%m%d-%H%M%S"))
+					# fourCC = cv2.VideoWriter_fourcc('X','V','I','D')
+					# fourCC = cv2.VideoWriter_fourcc(*'DIVX')
+					kcw.start(p, cv2.VideoWriter_fourcc('M','J','P','G'), args["fps"])
+					# kcw.start(p, fourCC, args["fps"])
 				# if the alarm is not on, turn it on
 				if not ALARM_ON:
 					ALARM_ON = True
@@ -203,6 +202,14 @@ while True:
 		else:
 			COUNTER = 0
 			ALARM_ON = False
+		
+		if updateConsecFrames:
+  			consecFrames += 1
+
+		kcw.update(frame)
+
+		if kcw.recording and consecFrames == args["buffer_size"]:
+  			kcw.finish()
 
 		# draw the computed eye aspect ratio on the frame to help
 		# with debugging and setting the correct eye aspect ratio

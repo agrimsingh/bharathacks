@@ -2,12 +2,12 @@ def getdata():
     import time,pymysql
     name = ['prateek','agrim']
     import datetime
-
+    ip = "192.178.5.10"
     
 
 
 
-    db = pymysql.connect('localhost',"root","root","bharathacks")
+    db = pymysql.connect(ip,"root","root","bharathacks")
     cursor = db.cursor()
     main = ['Seconds,Data,value,Altitude\n']
     for m1 in name:
@@ -35,7 +35,6 @@ def getdata():
 
         c = [k for k in results]
         i = [[u[0],float(u[1])*100] for u in c]
-        print i
         f = {}
 
         for l in i:
@@ -53,8 +52,7 @@ def getdata():
             main.append(y)
             c += 0
         
-        print main
-
+  
         
 
     r = {}
@@ -67,7 +65,7 @@ def getdata():
             r[l] = 1
     import time,pymysql
 
-    db = pymysql.connect('localhost',"root","root","timebased")
+    db = pymysql.connect(ip,"root","root","timebased")
     cursor = db.cursor()
     for k in r:
         sql = "UPDATE main SET col%s = col%s+%s" % (k,k,r[k])
@@ -79,7 +77,7 @@ def getdata():
             db.rollback()
             print "ERROR Updating Sleep Stats"
 
-    db = pymysql.connect('localhost',"root","root","timebased")
+    db = pymysql.connect(ip,"root","root","timebased")
     cursor = db.cursor()
     sql = "SELECT * FROM main"
     try:

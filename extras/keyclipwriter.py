@@ -34,7 +34,6 @@ class KeyClipWriter:
 		# and initialize the queue of frames that need to be written
 		# to the video file
 		self.recording = True
-		print self.frames
 		self.writer = cv2.VideoWriter(outputPath, fourcc, fps,
 			(self.frames[0].shape[1], self.frames[0].shape[0]), True)
 		self.Q = Queue()

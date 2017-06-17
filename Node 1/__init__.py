@@ -1,7 +1,7 @@
 from os import path
 from buildui import get_layouts
 import modules
-from pyxley.utils import create_app, default_static_path, default_template_path
+from pa.utils import create_app, default_static_path, default_template_path
 import shutil
 def check_for_bundle(path_to_static):
     # check if bundle.js exists

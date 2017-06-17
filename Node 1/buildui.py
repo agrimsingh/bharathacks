@@ -5,7 +5,7 @@ from pa.filters import SelectButton
 from pa import UILayout, register_layouts
 
 def two_axis_focus(df):
-    init_params = {"Data": "EAR"}
+    init_params = {"Data": "Employees"}
     colors = ["#847c77", "#ff5c61"]
     _chart = TwoAxisFocus("Seconds", "value", "value", df,
         chart_id="nvd3_focus", url="/api/nvd3_focus/",

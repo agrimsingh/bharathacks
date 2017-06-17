@@ -30,9 +30,10 @@ from scipy.spatial import distance as dist
 
 from extras.keyclipwriter import KeyClipWriter
 
-# db = pymysql.connect("192.178.5.10","root","root","bharathacks")
-# cursor = db.cursor()
-# likely that you'll have to do pip install pyobjc on mac bc the stupid sound doesn't play otherwise. 
+
+db = pymysql.connect("192.178.5.10","root","root","bharathacks")
+cursor = db.cursor()
+likely that you'll have to do pip install pyobjc on mac bc the stupid sound doesn't play otherwise. 
 
 #logo
 
@@ -147,12 +148,12 @@ while True:
 			if not file_exists:
   				writer.writeheader()
 			writer.writerow({'Timestamp': time.strftime("%Y-%m-%d %H:%M:%S"), 'EAR': ear})
-			# sql = "INSERT INTO "+user+" (time,ear) VALUES ('%s','%s')" % (str(int(time.time()),), str(ear))
-			# try:
-			# 	cursor.execute(sql)
-			# 	db.commit()
-			# except:
-			# 	db.rollback()
+			sql = "INSERT INTO "+user+" (time,ear) VALUES ('%s','%s')" % (str(int(time.time()),), str(ear))
+			try:
+				cursor.execute(sql)
+				db.commit()
+			except:
+				db.rollback()
 		
 		# earfile.write(('%s','%s') % (axisdate, ear) + '\n')
 

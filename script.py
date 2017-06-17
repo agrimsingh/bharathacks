@@ -1,19 +1,17 @@
-def refreshstats():
-    import time,pymysql
-    name = ['prateek','agrim']
-    import datetime
-    ip = "192.178.5.10"
+import os
+from flask import *
 
-    db = pymysql.connect(ip,"root","root","bharathacks")
-    cursor = db.cursor()
-    main = ['Seconds,Data,value,Altitude\n']
-    for m1 in name:
-        sql = "SELECT * FROM "+ m1
-        try:
-            cursor.execute(sql)
-            results = cursor.fetchall()
-        except:
-            print 'Error Getting Data'
-    print results
+video_dir = '~/output'
+app = Flask(__name__)
+@app.route('/home')
+def index():
+    files = [f for f in os.listdir(video_dir)]
+    files_number = len(files)
+    return render_template("index.html",title='Home',music_files=files,files_number=files_number)
 
-refreshstats()
+@app.route('/<filename>')
+def video(filename):
+    return send_from_directory('output',filename)
+
+if __name__=="__main__":
+    app.run()

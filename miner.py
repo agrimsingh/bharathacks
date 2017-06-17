@@ -33,7 +33,7 @@ from extras.keyclipwriter import KeyClipWriter
 
 db = pymysql.connect("192.178.5.10","root","root","bharathacks")
 cursor = db.cursor()
-likely that you'll have to do pip install pyobjc on mac bc the stupid sound doesn't play otherwise. 
+# likely that you'll have to do pip install pyobjc on mac bc the stupid sound doesn't play otherwise. 
 
 #logo
 
@@ -68,11 +68,11 @@ ap.add_argument("-w", "--webcam", type=int, default=0,
 ap.add_argument("-o", "--output", required=True,
 	help="path to output directory")
 
-ap.add_argument("-f", "--fps", type=int, default=15,
+ap.add_argument("-f", "--fps", type=int, default=10,
 	help="FPS of output video")
 ap.add_argument("-c", "--codec", type=str, default="MJPG",
 	help="codec of output video")
-ap.add_argument("-b", "--buffer-size", type=int, default=32,
+ap.add_argument("-b", "--buffer-size", type=int, default=40,
 	help="buffer size of video clip writer")
 
 args = vars(ap.parse_args())

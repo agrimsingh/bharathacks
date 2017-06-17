@@ -1,7 +1,8 @@
 '''
 facerecog / agrim
 '''
-
+user = "prateek" 
+print 'Hello ', user, "!"
 # USAGE
 # python miner.py --shape-predictor shape_predictor_68_face_landmarks.dat
 # python miner.py --shape-predictor shape_predictor_68_face_landmarks.dat --alarm alarm.wav
@@ -24,7 +25,11 @@ from matplotlib import style
 import os.path
 import csv
 import datetime as dt
+import time
+import pymysql
 
+db = pymysql.connect("192.178.5.10","root","root","bharathacks")
+cursor = db.cursor()
 # likely that you'll have to do pip install pyobjc on mac bc the stupid sound doesn't play otherwise. 
 
 #logo
@@ -63,8 +68,8 @@ args = vars(ap.parse_args())
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold for to set off the
 # alarm
-EYE_AR_THRESH = 0.27
-EYE_AR_CONSEC_FRAMES = 20
+EYE_AR_THRESH = 0.20
+EYE_AR_CONSEC_FRAMES = 13
 
 # initialize the frame counter as well as a boolean used to
 # indicate if the alarm is going off
@@ -152,6 +157,13 @@ while True:
 			if not file_exists:
   				writer.writeheader()
 			writer.writerow({'Timestamp': time.strftime("%Y-%m-%d %H:%M:%S"), 'EAR': ear})
+			sql = "INSERT INTO "+user+" (time,ear) VALUES ('%s','%s')" % (str(int(time.time()),), str(ear))
+			try:
+				cursor.execute(sql)
+				db.commit()
+			except:
+				db.rollback()
+		
 		# earfile.write(('%s','%s') % (axisdate, ear) + '\n')
 
 		# compute the convex hull for the left and right eye, then
@@ -212,5 +224,6 @@ while True:
 
 # do a bit of cleanup
 cv2.destroyAllWindows()
+db.close()
 vs.stop()
 # earfile.close()

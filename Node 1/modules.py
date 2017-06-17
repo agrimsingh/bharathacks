@@ -43,25 +43,31 @@ def getdata():
         for f in os.listdir('../output'):
             list1.append(f[:-4])
         print list1
-        print
-        for m in finalvar[1]:
-            if m[1] in list1:
-                finalvar[1].append(m[1])
-            else:
-
-                o = m[1].split('-')
-                o[1] = str(int(o[1])+1)
-                o = '-'.join(o)
-                if o in list1:
-                    finalvar[1].append(o)
+        if len(finalvar[1]) != 0:
+            for m in range(len(finalvar[1])):
+                if finalvar[1][m][1] in list1:
+                    finalvar[1][m].append(finalvar[1][m][1]+'.avi')
                 else:
-                    o = m[1].split('-')
-                    o[1] = str(int(o[1])-1)
+                    print finalvar[1][m][1]
+                    o = finalvar[1][m][1].split('-')
+
+                    o[1] = str(int(o[1])+1)
                     o = '-'.join(o)
                     if o in list1:
-                        finalvar[1].append(o)
-                
-        print finalvar
+                        finalvar[1][m].append(o+'.avi')
+                    else:
+                        o = finalvar[1][m][1].split('-')
+                        o[1] = str(int(o[1])-1)
+                        if len(o[1]) != 6:
+                            o[1] = "0"+o[1]
+                        o = '-'.join(o)
+                        print o
+                        print o in list1
+                        if o in list1:
+                            finalvar[1][m].append(o+'.avi')
+                        else:
+                            finalvar[1][m].append(0)
+            print finalvar
         c = [k for k in results]
         i = [[u[0],float(u[1])*100] for u in c]
         f = {}

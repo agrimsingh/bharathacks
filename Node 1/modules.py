@@ -1,5 +1,5 @@
 def getdata():
-    import time,pymysql
+    import time,pymysql,os
     name = ['prateek','agrim']
     import datetime
     ip = "192.178.5.10"
@@ -31,8 +31,37 @@ def getdata():
             if flag >= 20:
                 count += 1
                 flag = 0
-                db.append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(results[k][0]))))
+                i = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(results[k][0])))
+                i1 = i.split()
+                i2 = ''.join(i1[0].split('-'))
+                i3 = ''.join(i1[1].split(':'))
+                f = '-'.join([i2,i3])
+                db.append([i,f])
 
+        finalvar = [count,db]
+        list1 = []
+        for f in os.listdir('../output'):
+            list1.append(f[:-4])
+        print list1
+        print
+        for m in finalvar[1]:
+            if m[1] in list1:
+                finalvar[1].append(m[1])
+            else:
+
+                o = m[1].split('-')
+                o[1] = str(int(o[1])+1)
+                o = '-'.join(o)
+                if o in list1:
+                    finalvar[1].append(o)
+                else:
+                    o = m[1].split('-')
+                    o[1] = str(int(o[1])-1)
+                    o = '-'.join(o)
+                    if o in list1:
+                        finalvar[1].append(o)
+                
+        print finalvar
         c = [k for k in results]
         i = [[u[0],float(u[1])*100] for u in c]
         f = {}
@@ -52,11 +81,11 @@ def getdata():
             main.append(y)
             c += 0
         
-  
-        
+
 
     r = {}
     for t in db:
+        t = t[0]
         l = t.split()[1]
         l = l.split(':')[0]
         if l in r:
@@ -64,7 +93,7 @@ def getdata():
         else:
             r[l] = 1
     import time,pymysql
-
+    
     db = pymysql.connect(ip,"root","root","timebased")
     cursor = db.cursor()
     for k in r:
@@ -96,3 +125,5 @@ def getdata():
     a.writelines(main)
     a.close()
     print 'DONE' 
+
+getdata()
